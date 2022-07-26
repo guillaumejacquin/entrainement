@@ -1,0 +1,16 @@
+[
+    {
+      "eventId": 1,
+      "ticketCollections": [
+        {
+          "collection": "Mouse On",
+          "crowdsale": "KT1AKqxCJH9EPimNm1wo1BEgG9bFRgptJwkk",
+          "collectionAddress": "KT1Apf8CPkYBe3bRuTCET6A4NhnosX2BAnp9",
+          "pricePerToken": 4,
+          "maxMintPerUser": 5,
+          "saleSize": 500
+        }
+      ]
+    }
+  ]
+  
