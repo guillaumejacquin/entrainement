@@ -1,18 +1,20 @@
 import csv
 import json
 import re
+from copy import deepcopy
 
 class DataToJson():
-    def __init__(self, _json_file="smart-contracts-data.json", _csv_file="organizers-data.csv", _json_output="smart_constrast_data.json"): #les fichiers sont prédéfinis
+    def __init__(self, _json_file="smart-contracts-data.json", _csv_file="organizers-data.csv", _json_output="result"): #les fichiers sont prédéfinis
         self.format_allowed = [".png", ".mp4", ".jpeg"]
         self.json_file = _json_file
         self.csv_file = _csv_file
         self.json_output = _json_output
-        
+
         self.json_file = self.add_extension(self.json_file, ".json")
         self.csv_file = self.add_extension(self.csv_file, ".csv")
         self.json_output = self.add_extension(self.json_output, ".json")
 
+        #json template
         self.template_json = [{
             "id": "",
             "name": "",
@@ -109,13 +111,16 @@ class DataToJson():
                     self.dict_trie_csv_infos.append(y)
 
     def fill_templates_value(self):
-        for i in range(len(self.dict_trie_csv_infos)):
-            self.template_json.append(self.template_json[0])
             #add values to json
         
+        compteur = 0
         for i in range(len(self.dict_trie_csv_infos)):
+
             if (self.dict_trie_csv_infos[i]['id']) != self.dict_trie_csv_infos[i - 1]['id']:
+                self.template_json.append(deepcopy(self.template_json[0]))
+
                 self.template_json[i]['id'] = self.dict_trie_csv_infos[i]['id']
+                print(self.template_json[i]['id'])
                 self.template_json[i]['name'] = self.dict_trie_csv_infos[i]['name']
                 self.template_json[i]['title'] = self.dict_trie_csv_infos[i]['event title']
                 self.template_json[i]['startDateTime'] = self.dict_trie_csv_infos[i]['smart_contract']['sale_params']['start_time']
@@ -132,8 +137,10 @@ class DataToJson():
                 self.template_json[i]['ticketCollection'][0]['pricePerToken'] = self.dict_trie_csv_infos[i]['smart_contract']['sale_params']['price_per_token']
                 self.template_json[i]['ticketCollection'][0]['totalTicketsCount'] = ''             
                 self.template_json[i]['ticketCollection'][0]['soldTicketsCount'] = ''
+            
             else: #check if same event (same id)
-                self.template_json[-1]['ticketCollection'].append(
+                compteur +=1
+                self.template_json[i-compteur]['ticketCollection'].append(
                 {
                     "collectionName": "",
                     "scAddress": "",
@@ -143,14 +150,16 @@ class DataToJson():
                     "saleSize": "",
             })
 
-                self.template_json[i]['ticketCollection'][-1]['collectionName'] = self.dict_trie_csv_infos[i]['smart_contract']['collectionName']
-                self.template_json[i]['ticketCollection'][-1]['endTime'] = self.dict_trie_csv_infos[0]['smart_contract']['sale_params']['end_time']
-                self.template_json[i]['ticketCollection'][-1]['pricePerToken'] = self.dict_trie_csv_infos[i]['smart_contract']['sale_params']['price_per_token']
-                self.template_json[i]['ticketCollection'][-1]['totalTicketsCount'] = ''             
-                self.template_json[i]['ticketCollection'][-1]['soldTicketsCount'] = ''
-    
+                self.template_json[i - compteur]['ticketCollection'][-1]['collectionName'] = self.dict_trie_csv_infos[i]['smart_contract']['collectionName']
+                self.template_json[i - compteur]['ticketCollection'][-1]['endTime'] = self.dict_trie_csv_infos[0]['smart_contract']['sale_params']['end_time']
+                self.template_json[i - compteur]['ticketCollection'][-1]['pricePerToken'] = self.dict_trie_csv_infos[i]['smart_contract']['sale_params']['price_per_token']
+                self.template_json[i - compteur]['ticketCollection'][-1]['totalTicketsCount'] = ''             
+                self.template_json[i - compteur]['ticketCollection'][-1]['soldTicketsCount'] = ''
+
+        self.template_json =self.template_json[:-1] #had to delete the last
+        
     def write_informations_into_json(self):
-        with open('output.json', 'w') as outfile:
+        with open(self.json_output, 'w') as outfile:
             json.dump(self.template_json, outfile, indent=4)
             print("JSON file created")
         outfile.close()
@@ -164,12 +173,8 @@ class DataToJson():
         self.write_informations_into_json()
 
 def main():
-    data_to_json = DataToJson(_json_output="test")
+    data_to_json = DataToJson(_json_output="test.json")
     data_to_json.transform_json_and_csv_to_json()
 
-main()
+# main()
 
-def date_in_date_format(date):
-    date = date.split("-")
-    date = date[2] + "-" + date[1] + "-" + date[0]
-    return date
